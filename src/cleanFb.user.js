@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Clean Fb
 // @namespace    https://github.com/houcheng/CleanFBSapce
-// @version      0.11
+// @version      0.12
 // @description  清除FB
 // @author       Kevin Yang, Houcheng Lin
 // @grant        GM_addStyle
@@ -18,7 +18,7 @@ function createBannerNode() {
         #myContainer {
             position:               fixed;
             bottom:                 0;
-            left:                   64px;
+            right:                  64px;
             font-size:              12px;
             background:             orange;
             border:                 3px outset black;
@@ -54,9 +54,8 @@ function checkKeywordsExist(node) {
 function checkKeywordExistBySpan(node){
     const id = node.querySelector('div[role=article]')?.getAttribute('aria-describedby')?.split(' ')[0];
     if(id == null) return false;
-    // const span = node.querySelector(`span[id=${id}]`);
-    const spanOrH4 = node.querySelector(`[id="${id}"]`);
-    return spanOrH4 && spanOrH4.innerHTML && NeedToRemoveKeywords.some((lang) => spanOrH4.innerHTML.contains(lang));
+    const span = node.querySelector(`span[id='${id}']`);
+    return span && span.innerHTML && NeedToRemoveKeywords.some((lang) => span.innerHTML.contains(lang));
 }
 
 function removeRecommandPost() {
@@ -65,9 +64,8 @@ function removeRecommandPost() {
     lastRunTick = nowTick;
 
     document.querySelectorAll("div[data-pagelet*='FeedUnit_']").forEach((node) => {
-        // debug
-        // console.log('node is', node);
         var shouldRemove = false;
+        // console.log(node.innerText)
         if (node.innerText && node.innerText.startsWith("連續短片和短片")) {
             shouldRemove = true;
         } else if (checkKeywordsExist(node)) {
