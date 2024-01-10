@@ -11,6 +11,8 @@
 
 
 var deletedTitles = [];
+var userKeywords = [];
+
 function displayDeletedTitles() {
     // Create a modal or div to display the titles
     const modal = document.createElement('div');
@@ -97,12 +99,32 @@ function createBannerNode() {
     };
     buttonRow.appendChild(hideBtn);
 
+    // Input row for keyword filtering
+    const inputRow = document.createElement('div');
+    inputRow.classList.add('inputRow');
+
+    // Input field for keywords
+    const keywordInput = document.createElement('input');
+    keywordInput.setAttribute('type', 'text');
+    keywordInput.setAttribute('placeholder', 'user keywords');
+    inputRow.appendChild(keywordInput);
+
+    // Button to apply keyword filtering
+    const applyButton = document.createElement('button');
+    applyButton.innerHTML = 'Apply';
+    applyButton.onclick = () => {
+        userKeywords = keywordInput.value.split(';').map(k => k.trim());
+    };
+    inputRow.appendChild(applyButton);
+
+    node.appendChild(inputRow);
+
     return node;
 }
 
 const bannerNode = createBannerNode();
 const CheckInterval = 3000;
-const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos', 'Follow'];
+const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos']; // , 'Follow'];
 
 var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
@@ -111,14 +133,16 @@ var debugNode = false;
 function checkKeywordsExist(node) {
     if (debugNode) console.log("inner html", node.innerHTML);
     if (!node.innerHTML) return false;
-    return NeedToRemoveKeywords.some((lang) => node.innerHTML.contains('dir="auto">' + lang + '</span>')) || NeedToRemoveKeywords.some((lang) => node.innerHTML.contains('">' + lang + '<')) ;
+    const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
+    return keywords.some((lang) => node.innerHTML.contains('dir="auto">' + lang + '</span>')) || keywords.some((lang) => node.innerHTML.contains('">' + lang + '<')) ;
 }
 
 function checkKeywordExistBySpan(node){
     const id = node.querySelector('div[role=article]')?.getAttribute('aria-describedby')?.split(' ')[0];
     if(id == null) return false;
     const span = node.querySelector(`span[id='${id}']`);
-    return span && span.innerHTML && NeedToRemoveKeywords.some((lang) => span.innerHTML.contains(lang));
+    const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
+    return span && span.innerHTML && keywords.some((lang) => span.innerHTML.contains(lang));
 }
 
 function removeRecommandPost() {
