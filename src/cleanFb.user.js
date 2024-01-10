@@ -52,11 +52,12 @@ function createBannerNode() {
             flex-direction: column; /* Organize child elements in a column */
         }
         #myContainer > * {
-            margin-bottom: 5px; /* Spacing between rows */
+            margin-bottom: 3px; /* Spacing between rows */
+            cursor: pointer;            
         }
         .buttonRow {
             display: flex; /* Flex layout for buttons */
-            gap: 10px; /* Gap between buttons */
+            gap: 5px; /* Gap between buttons */
         }
         #myButton {
             cursor: pointer;
@@ -64,6 +65,10 @@ function createBannerNode() {
         #myContainer p {
             color: red;
             background: white;
+        }
+        .inputRow {
+            display: flex; /* Flex layout for buttons */
+            gap: 5px; /* Gap between buttons */
         }
     `);
 
@@ -73,7 +78,6 @@ function createBannerNode() {
     // Create a div for buttons
     const buttonRow = document.createElement('div');
     buttonRow.classList.add('buttonRow');
-    node.append(buttonRow);
 
     // Button to show deleted titles
     const showTitlesBtn = document.createElement('button');
@@ -117,7 +121,12 @@ function createBannerNode() {
     };
     inputRow.appendChild(applyButton);
 
-    node.appendChild(inputRow);
+    // node.append(buttonRow);
+    // node.appendChild(inputRow);
+    node.onclick = () => {
+        node.appendChild(buttonRow);
+        node.appendChild(inputRow);
+    }
 
     return node;
 }
