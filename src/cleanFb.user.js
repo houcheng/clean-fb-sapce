@@ -133,7 +133,7 @@ function createBannerNode() {
 
 const bannerNode = createBannerNode();
 const CheckInterval = 3000;
-const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos']; // , 'Follow'];
+const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos', 'Follow'];
 
 var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
