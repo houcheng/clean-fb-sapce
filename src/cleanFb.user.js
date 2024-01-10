@@ -32,30 +32,46 @@ function createBannerNode() {
     node.innerHTML = '';
     node.setAttribute ('id', 'myContainer');
     document.body.appendChild (node);
-    GM_addStyle ( `
+    // Add style for the container
+    GM_addStyle(`
         #myContainer {
-            position:               fixed;
-            bottom:                 0;
-            right:                  64px;
-            font-size:              12px;
-            background:             orange;
-            border:                 3px outset black;
-            margin:                 5px;
-            opacity:                0.9;
-            z-index:                1100;
-            width:                  300px;
-            padding:                5px 5px;
+            position: fixed;
+            bottom: 0;
+            right: 64px;
+            font-size: 12px;
+            background: orange;
+            border: 3px outset black;
+            margin: 5px;
+            opacity: 0.9;
+            z-index: 1100;
+            width: 300px;
+            padding: 5px;
+            display: flex;
+            flex-direction: column; /* Organize child elements in a column */
+        }
+        #myContainer > * {
+            margin-bottom: 5px; /* Spacing between rows */
+        }
+        .buttonRow {
+            display: flex; /* Flex layout for buttons */
+            gap: 10px; /* Gap between buttons */
         }
         #myButton {
-            cursor:                 pointer;
+            cursor: pointer;
         }
         #myContainer p {
-            color:                  red;
-            background:             white;
+            color: red;
+            background: white;
         }
-    ` );
+    `);
+
     const titleNode = document.createElement('div');
     node.appendChild(titleNode);
+
+    // Create a div for buttons
+    const buttonRow = document.createElement('div');
+    buttonRow.classList.add('buttonRow');
+    node.append(buttonRow);
 
     // Button to show deleted titles
     const showTitlesBtn = document.createElement('button');
@@ -63,7 +79,7 @@ function createBannerNode() {
     showTitlesBtn.onclick = () => {
         displayDeletedTitles();
     };
-    node.appendChild(showTitlesBtn);
+    buttonRow.appendChild(showTitlesBtn);
 
     // Button to show deleted titles
     const debugBtn = document.createElement('button');
@@ -71,7 +87,7 @@ function createBannerNode() {
     debugBtn.onclick = () => {
         debugNode = true;
     };
-    node.appendChild(debugBtn);
+    buttonRow.appendChild(debugBtn);
 
     // Button to hide
     const hideBtn = document.createElement('button');
@@ -79,7 +95,7 @@ function createBannerNode() {
     hideBtn.onclick = () => {
         node.style.display = 'none'; // Hide the entire banner
     };
-    node.appendChild(hideBtn);
+    buttonRow.appendChild(hideBtn);
 
     return node;
 }
