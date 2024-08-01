@@ -53,7 +53,7 @@ function createBannerNode() {
         }
         #myContainer > * {
             margin-bottom: 3px; /* Spacing between rows */
-            cursor: pointer;            
+            cursor: pointer;
         }
         .buttonRow {
             display: flex; /* Flex layout for buttons */
@@ -159,7 +159,7 @@ function removeRecommandPost() {
     if (nowTick - lastRunTick < CheckInterval) return;
     lastRunTick = nowTick;
 
-    document.querySelectorAll("div[data-pagelet*='FeedUnit_']").forEach((node) => {
+    document.querySelectorAll("div[aria-posinset]").forEach((node) => {
         var shouldRemove = false;
         // console.log(node.innerText)
         if (node.innerText && node.innerText.startsWith("連續短片和短片")) {
@@ -171,9 +171,9 @@ function removeRecommandPost() {
         }
 
         if (shouldRemove) {
+            const nodeTexts = node.innerText.replaceAll("Facebook", '')
             removedCount += 1;
-            const msg = node.innerText ? node.innerText.split('\n')[0] : "no-name";
-            // bannerNode.innerHTML = `<div>${removedCount} ${msg}</div>`;
+            const msg = nodeTexts.split('\n').map(x => x.trim()).filter(x => x)[0]
             console.log(`<div>${removedCount} ${msg}</div>`)
             deletedTitles.push(`${removedCount} ${msg}`);
             bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
