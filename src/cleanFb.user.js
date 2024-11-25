@@ -180,20 +180,124 @@ function detectKeywords(node) {
     return Array.from(spans).some(span => keywords.some(keyword => span.innerText.includes(keyword)));
 }
 
-function detectAdSpanWithLink(post) {
+function simulateHoverOld(element) {
+    console.log("Send event to", element);
+
+    // Create and dispatch mouseenter event
+    const mouseenterEvent = new MouseEvent('mouseenter', {
+        'bubbles': true,
+        'cancelable': true
+    });
+    element.dispatchEvent(mouseenterEvent);
+
+    // Create and dispatch mouseover event
+    const mouseoverEvent = new MouseEvent('mouseover', {
+        'bubbles': true,
+        'cancelable': true
+    });
+    element.dispatchEvent(mouseoverEvent);
+    
+    const mousemoveEvent = new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        clientX: element.getBoundingClientRect().left,
+        clientY: element.getBoundingClientRect().top
+    });
+    element.dispatchEvent(mousemoveEvent);    
+    const mouseexitEvent = new MouseEvent('mouseleave', {
+        'bubbles': true,
+        'cancelable': true
+    });
+    element.dispatchEvent(mouseexitEvent);
+}
+
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
+
+// Mainly simulate the blur event, as see a lot of blur event handlers are defined in DEVTOOLS.
+function simulateHover(element) {
+    // Prevents simulating events changes the scrollbar position
+    if (!isInViewport(element)) {
+        return;
+    }
+
+    // Array of events to simulate
+    const events = [
+        // 'mouseenter',
+        // 'mouseover',
+        // 'mousemove',
+        'focus',      // Added focus event
+        'focusin'     // Added focusin event
+    ];
+
+    // Dispatch all events
+    events.forEach(eventType => {
+        const event = new MouseEvent(eventType, {
+            bubbles: true,
+            cancelable: true,
+            clientX: element.getBoundingClientRect().left,
+            clientY: element.getBoundingClientRect().top
+        });
+        element.dispatchEvent(event);
+    });
+
+    // For focus events, we need to use FocusEvent instead of MouseEvent
+    const focusEvent = new FocusEvent('focus', {
+        bubbles: true,
+        cancelable: true
+    });
+    element.dispatchEvent(focusEvent);
+
+    // You might also want to focus the element directly
+    if (element.focus) {
+        element.focus();
+    }
+}
+
+stopRemove = false;
+function detectAdSpanWithLink(post, callback) {
     const childSpans = post.querySelectorAll('span');
     for (const span of childSpans) {
         if (span.offsetWidth < 100 && span.offsetHeight < 30 && span.offsetHeight > 0 && span.offsetWidth > 0) {
             const links = span.querySelectorAll('a');
+            if (links && links.length && links[0].href.includes('/ads/about/')) {
+                callback();
+            }
             for (const link of links) {
                 if (link.href && link.href.includes('/ads/about/')) {
-                    return true;
+                    // callback();
                 // }
+                // Too many
                 // if (link.href && link.href.startsWith('https://www.facebook.com/?__cft__')) {
                 //    console.log("delete link.href", link.href);
                 //    return true;
-                } else if (link.href) {
-                    // console.log("link.href", link.href);
+                } else if (link.href && !stopRemove) {
+                    // If there's a link but it's not our target AD URL,
+                    // simulate hover and check again after a small delay
+                    // simulateHover(span);
+                    simulateHover(link);
+                    setTimeout(() => {
+                        // Recheck the link after hover simulation
+                        const updatedLinks = span.querySelectorAll('a');
+                        if (updatedLinks && updatedLinks.length && updatedLinks[0].href.includes('/ads/about/')) {
+                            callback();
+                        }
+            
+                        /* for (const updatedLink of updatedLinks) {
+                            if (updatedLink.href && updatedLink.href.includes('/ads/about/')) {
+                                console.log("remove after simulate hover", span);
+                                callback();
+                                stopRemove = true;
+                            }
+                        } */
+                    }, 100);
                 }
             }
         }
@@ -216,14 +320,7 @@ function removeRecommandPost() {
                 if (postsParent) {
                     const children = Array.from(postsParent.children);
                     children.forEach((child) => {
-                        var shouldRemove = false;
-                        if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
-                            shouldRemove = true;
-                        } else if (detectKeywords(child) || detectAdSpanWithLink(child)) {
-                            shouldRemove = true;
-                        } 
-
-                        if (shouldRemove) {
+                        var removeChild = () => {
                             // console.log('Remove:', child.innerText);
                             removedCount += 1;
                             const lines = child.innerText ? child.innerText.split('\n') : [];
@@ -233,6 +330,15 @@ function removeRecommandPost() {
                             deletedTitles.push(`${removedCount} ${msg}`);
                             bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
                             child.remove();
+                        };
+
+                        
+                        if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
+                            removeChild();
+                        } else if (detectKeywords(child)) {
+                            removeChild();
+                        } else {
+                            detectAdSpanWithLink(child, removeChild);
                         }
                     });
                 }
