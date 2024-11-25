@@ -158,10 +158,11 @@ function removeRecommandPost() {
     var nowTick = (new Date()).getTime();
     if (nowTick - lastRunTick < CheckInterval) return;
     lastRunTick = nowTick;
+    console.log('removeRecommandPost')
 
-    document.querySelectorAll("div[aria-posinset]").forEach((node) => {
+    document.querySelectorAll("div[data-pagelet*='FeedUnit_']").forEach((node) => {
         var shouldRemove = false;
-        // console.log(node.innerText)
+        console.log(node.innerText)
         if (node.innerText && node.innerText.startsWith("連續短片和短片")) {
             shouldRemove = true;
         } else if (checkKeywordsExist(node)) {
@@ -171,9 +172,9 @@ function removeRecommandPost() {
         }
 
         if (shouldRemove) {
-            const nodeTexts = node.innerText.replaceAll("Facebook", '')
             removedCount += 1;
-            const msg = nodeTexts.split('\n').map(x => x.trim()).filter(x => x)[0]
+            const msg = node.innerText ? node.innerText.split('\n')[0] : "no-name";
+            // bannerNode.innerHTML = `<div>${removedCount} ${msg}</div>`;
             console.log(`<div>${removedCount} ${msg}</div>`)
             deletedTitles.push(`${removedCount} ${msg}`);
             bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
