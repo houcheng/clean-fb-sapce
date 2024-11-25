@@ -106,6 +106,14 @@ function createBannerNode() {
     hideBtn.innerHTML = 'Hide';
     hideBtn.onclick = () => {
         node.style.display = 'none'; // Hide the entire banner
+        const dot = document.createElement('div');
+        dot.setAttribute('id', 'restoreDot');
+        dot.style = 'position: fixed; bottom: 10px; right: 10px; width: 10px; height: 10px; background: red; border-radius: 50%; cursor: pointer; z-index: 2001;';
+        dot.onclick = () => {
+            node.style.display = 'block'; // Restore the banner
+            document.body.removeChild(dot); // Remove the dot
+        };
+        document.body.appendChild(dot);
     };
     buttonRow.appendChild(hideBtn);
 
@@ -180,6 +188,12 @@ function detectAdSpanWithLink(post) {
             for (const link of links) {
                 if (link.href && link.href.includes('/ads/about/')) {
                     return true;
+                // }
+                // if (link.href && link.href.startsWith('https://www.facebook.com/?__cft__')) {
+                //    console.log("delete link.href", link.href);
+                //    return true;
+                } else if (link.href) {
+                    // console.log("link.href", link.href);
                 }
             }
         }
@@ -210,12 +224,12 @@ function removeRecommandPost() {
                         } 
 
                         if (shouldRemove) {
-                            console.log('Remove:', child.innerText);
+                            // console.log('Remove:', child.innerText);
                             removedCount += 1;
                             const lines = child.innerText ? child.innerText.split('\n') : [];
                             const title = lines.filter(line => line !== "Facebook")[0] || "no-name";
                             const msg = title;
-                            console.log(`<div>${removedCount} ${msg}</div>`);
+                            // console.log(`<div>${removedCount} ${msg}</div>`);
                             deletedTitles.push(`${removedCount} ${msg}`);
                             bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
                             child.remove();
