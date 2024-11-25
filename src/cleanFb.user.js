@@ -18,6 +18,12 @@ function displayDeletedTitles() {
     const modal = document.createElement('div');
     modal.style = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border: 1px solid black; z-index: 2000; max-height: 300px; overflow-y: scroll;';
     modal.innerHTML = '<h2>Deleted Titles</h2><ul>' + deletedTitles.map(title => `<li>${title}</li>`).join('') + '</ul>';
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = 'Close';
+    closeButton.onclick = () => {
+        document.body.removeChild(modal);
+    };
+    modal.appendChild(closeButton);
     document.body.appendChild(modal);
 
     // Click outside the modal to close
@@ -81,7 +87,7 @@ function createBannerNode() {
 
     // Button to show deleted titles
     const showTitlesBtn = document.createElement('button');
-    showTitlesBtn.innerHTML = 'Show';
+    showTitlesBtn.innerHTML = 'Deleted Titles';
     showTitlesBtn.onclick = () => {
         displayDeletedTitles();
     };
@@ -139,14 +145,6 @@ var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
 var debugNode = false;
 
-function checkKeywordsExist(node) {
-    if (debugNode) console.log("inner html", node.innerHTML);
-    if (!node.innerHTML) return false;
-    const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
-    const spans = node.querySelectorAll('span');
-    return Array.from(spans).some(span => keywords.some(keyword => span.innerText.includes(keyword)));
-}
-
 function findPostsParentBySize(rootNode) {
     let largestNode = null;
     let largestSize = 0;
@@ -166,19 +164,12 @@ function findPostsParentBySize(rootNode) {
     return largestNode;
 }
 
-function detectAdSpanBySize(post) {
-    const childSpans = post.querySelectorAll('span');
-    for (const span of childSpans) {
-        if (span.children.length > 0 && span.offsetHeight > 0 && span.offsetWidth > 0 && span.offsetHeight < 30 && span.offsetWidth < 100) {
-            const childSpanHeight = span.offsetHeight;
-            const allChildrenHaveSameHeight = Array.from(span.children).every(child => child.offsetHeight === childSpanHeight);
-            const allChildrenFitSize = Array.from(span.children).every(child => child.offsetWidth > 0 && child.offsetWidth < 100 && child.offsetHeight > 0 && child.offsetHeight < 30);
-            if (allChildrenHaveSameHeight && allChildrenFitSize) {
-                return true;
-            }
-        }
-    }
-    return false;
+function detectKeywords(node) {
+    if (debugNode) console.log("inner html", node.innerHTML);
+    if (!node.innerHTML) return false;
+    const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
+    const spans = node.querySelectorAll('span');
+    return Array.from(spans).some(span => keywords.some(keyword => span.innerText.includes(keyword)));
 }
 
 function detectAdSpanWithLink(post) {
@@ -214,14 +205,16 @@ function removeRecommandPost() {
                         var shouldRemove = false;
                         if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
                             shouldRemove = true;
-                        } else if (checkKeywordsExist(child) || detectAdSpanWithLink(child)) {
+                        } else if (detectKeywords(child) || detectAdSpanWithLink(child)) {
                             shouldRemove = true;
                         } 
 
                         if (shouldRemove) {
                             console.log('Remove:', child.innerText);
                             removedCount += 1;
-                            const msg = child.innerText ? child.innerText.split('\n')[0] : "no-name";
+                            const lines = child.innerText ? child.innerText.split('\n') : [];
+                            const title = lines.filter(line => line !== "Facebook")[0] || "no-name";
+                            const msg = title;
                             console.log(`<div>${removedCount} ${msg}</div>`);
                             deletedTitles.push(`${removedCount} ${msg}`);
                             bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
