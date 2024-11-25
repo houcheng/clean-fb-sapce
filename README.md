@@ -1,6 +1,7 @@
-# CleanFBSapce
+# clean-fb-space
 
-單純不想看到 FB 贊助廣告而寫的套件
+This is a tampermonkey script that runs as a chrome extension, hacks current running HTML DOM for removing AD blocks in facebook page.
+It periodically poll the pages to find the div containing some keywords and removes it from the DOM.
 
 ### Install UsersSript Engine
 
