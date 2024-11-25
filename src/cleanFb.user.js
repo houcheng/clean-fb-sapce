@@ -133,7 +133,7 @@ function createBannerNode() {
 
 const bannerNode = createBannerNode();
 const CheckInterval = 3000;
-const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos', 'Follow'];
+const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos', 'Follow', 'Join'];
 
 var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
@@ -143,51 +143,109 @@ function checkKeywordsExist(node) {
     if (debugNode) console.log("inner html", node.innerHTML);
     if (!node.innerHTML) return false;
     const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
-    return keywords.some((lang) => node.innerHTML.contains('dir="auto">' + lang + '</span>')) || keywords.some((lang) => node.innerHTML.contains('">' + lang + '<')) ;
+    const spans = node.querySelectorAll('span');
+    return Array.from(spans).some(span => keywords.some(keyword => span.innerText.includes(keyword)));
 }
 
-function checkKeywordExistBySpan(node){
-    const id = node.querySelector('div[role=article]')?.getAttribute('aria-describedby')?.split(' ')[0];
-    if(id == null) return false;
-    const span = node.querySelector(`span[id='${id}']`);
-    const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
-    return span && span.innerHTML && keywords.some((lang) => span.innerHTML.contains(lang));
+function findPostsParentBySize(rootNode) {
+    let largestNode = null;
+    let largestSize = 0;
+
+    function traverse(node) {
+        if (node.offsetWidth > 0 && node.offsetHeight > 0) {
+            const size = node.offsetWidth * node.offsetHeight;
+            if (size > largestSize || (size === largestSize && node.children.length > 1)) {
+                largestSize = size;
+                largestNode = node;
+            }
+        }
+        Array.from(node.children).forEach(traverse);
+    }
+
+    traverse(rootNode);
+    return largestNode;
+}
+
+function detectAdSpanBySize(post) {
+    const childSpans = post.querySelectorAll('span');
+    for (const span of childSpans) {
+        if (span.children.length > 0 && span.offsetHeight > 0 && span.offsetWidth > 0 && span.offsetHeight < 30 && span.offsetWidth < 100) {
+            const childSpanHeight = span.offsetHeight;
+            const allChildrenHaveSameHeight = Array.from(span.children).every(child => child.offsetHeight === childSpanHeight);
+            const allChildrenFitSize = Array.from(span.children).every(child => child.offsetWidth > 0 && child.offsetWidth < 100 && child.offsetHeight > 0 && child.offsetHeight < 30);
+            if (allChildrenHaveSameHeight && allChildrenFitSize) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+function detectAdSpanWithLink(post) {
+    const childSpans = post.querySelectorAll('span');
+    for (const span of childSpans) {
+        if (span.offsetWidth < 100 && span.offsetHeight < 30 && span.offsetHeight > 0 && span.offsetWidth > 0) {
+            const links = span.querySelectorAll('a');
+            for (const link of links) {
+                if (link.href && link.href.includes('/ads/about/')) {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
 }
 
 function removeRecommandPost() {
     var nowTick = (new Date()).getTime();
     if (nowTick - lastRunTick < CheckInterval) return;
     lastRunTick = nowTick;
-    console.log('removeRecommandPost')
+    console.log('removeRecommandPost');
 
-    document.querySelectorAll("div[data-pagelet*='FeedUnit_']").forEach((node) => {
-        var shouldRemove = false;
-        console.log(node.innerText)
-        if (node.innerText && node.innerText.startsWith("連續短片和短片")) {
-            shouldRemove = true;
-        } else if (checkKeywordsExist(node)) {
-            shouldRemove = true;
-        } else if (checkKeywordExistBySpan(node)){
-            shouldRemove = true;
-        }
+    const rootNodes = document.querySelectorAll('h3');
+    rootNodes.forEach((h3) => {
+        if (h3.innerText === "News Feed posts") {
+            const rootNode = h3.parentElement; // Get the parent element of the h3
+            if (rootNode) {
+                const postsParent = findPostsParentBySize(rootNode);
+                if (postsParent) {
+                    const children = Array.from(postsParent.children);
+                    children.forEach((child) => {
+                        var shouldRemove = false;
+                        if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
+                            shouldRemove = true;
+                        } else if (checkKeywordsExist(child) || detectAdSpanWithLink(child)) {
+                            shouldRemove = true;
+                        } 
 
-        if (shouldRemove) {
-            removedCount += 1;
-            const msg = node.innerText ? node.innerText.split('\n')[0] : "no-name";
-            // bannerNode.innerHTML = `<div>${removedCount} ${msg}</div>`;
-            console.log(`<div>${removedCount} ${msg}</div>`)
-            deletedTitles.push(`${removedCount} ${msg}`);
-            bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
-            node.remove();
+                        if (shouldRemove) {
+                            console.log('Remove:', child.innerText);
+                            removedCount += 1;
+                            const msg = child.innerText ? child.innerText.split('\n')[0] : "no-name";
+                            console.log(`<div>${removedCount} ${msg}</div>`);
+                            deletedTitles.push(`${removedCount} ${msg}`);
+                            bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
+                            child.remove();
+                        }
+                    });
+                }
+            }
         }
     });
     if (debugNode) debugNode = false;
     lastRunTick = nowTick;
 }
 
+function printH3Titles() {
+    document.querySelectorAll('h3').forEach((h3) => {
+        console.log('H3 Title:', h3.innerText);
+    });
+}
+
 function executeActions() {
     removeRecommandPost();
-    setTimeout(()=> executeActions(), 1000);
+    // printH3Titles();
+    setTimeout(() => executeActions(), 1000);
 }
 
 

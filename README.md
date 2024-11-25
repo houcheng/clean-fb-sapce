@@ -1,7 +1,8 @@
 # clean-fb-space
 
 This is a tampermonkey script that runs as a chrome extension, hacks current running HTML DOM for removing AD blocks in facebook page.
-It periodically poll the pages to find the div containing some keywords and removes it from the DOM.
+It periodically poll the DOM, query the div id named as "FeedUnit_*" that indicates an standalone block, either a AD or a post in facebook,
+then the script can filter the AD blocks by keywords like "Follow", "Join", etc. Finally, removes these AD blocks from the DOM.
 
 ### Install UsersSript Engine
 
