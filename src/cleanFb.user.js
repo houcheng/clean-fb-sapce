@@ -222,6 +222,7 @@ function isInViewport(element) {
 }
 
 // Mainly simulate the blur event, as see a lot of blur event handlers are defined in DEVTOOLS.
+// TODO: Only simulate on the link.href with __cft__
 function simulateHover(element) {
     // Prevents simulating events changes the scrollbar position
     if (!isInViewport(element)) {
@@ -248,17 +249,29 @@ function simulateHover(element) {
         element.dispatchEvent(event);
     });
 
+    const focusEvents = [
+        'focus',
+        'focusin',
+        'focusout',
+    ];
+    focusEvents.forEach(eventType => {
+        const event = new FocusEvent(eventType, {
+            bubbles: true,
+            cancelable: true
+        });
+        element.dispatchEvent(event);
+    });
     // For focus events, we need to use FocusEvent instead of MouseEvent
-    const focusEvent = new FocusEvent('focus', {
+    /* const focusEvent = new FocusEvent('focus', {
         bubbles: true,
         cancelable: true
     });
-    element.dispatchEvent(focusEvent);
+    element.dispatchEvent(focusEvent); */
 
     // You might also want to focus the element directly
-    if (element.focus) {
+    /* if (element.focus) {
         element.focus();
-    }
+    } */
 }
 
 stopRemove = false;
@@ -278,7 +291,7 @@ function detectAdSpanWithLink(post, callback) {
                 // if (link.href && link.href.startsWith('https://www.facebook.com/?__cft__')) {
                 //    console.log("delete link.href", link.href);
                 //    return true;
-                } else if (link.href && !stopRemove) {
+                } else if (link.href && link.href.startsWith('https://www.facebook.com/?__cft__') && !stopRemove) {
                     // If there's a link but it's not our target AD URL,
                     // simulate hover and check again after a small delay
                     // simulateHover(span);
