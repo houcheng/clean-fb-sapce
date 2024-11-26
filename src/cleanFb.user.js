@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         Clean Fb
-// @namespace    https://github.com/houcheng/CleanFBSapce
+// @namespace    https://github.com/houcheng/clean-fb-space
 // @version      0.12
-// @description  清除FB
+// @description  Clean facebook AD blocks
 // @author       Kevin Yang, Houcheng Lin
 // @grant        GM_addStyle
 // @include      /https:\/\/www.facebook.com
-// @downloadURL  https://github.com/houcheng/CleanFBSapce/raw/master/src/cleanFb.user.js
+// @downloadURL  https://github.com/houcheng/clean-fb-space/raw/master/src/cleanFb.user.js
 // ==/UserScript==
 
 
