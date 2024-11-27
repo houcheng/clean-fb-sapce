@@ -152,6 +152,7 @@ const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sp
 var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
 var debugNode = false;
+var previousChildCount = 0;
 
 function findPostsParentBySize(rootNode) {
     let largestNode = null;
@@ -332,6 +333,15 @@ function removeRecommandPost() {
                 const postsParent = findPostsParentBySize(rootNode);
                 if (postsParent) {
                     const children = Array.from(postsParent.children);
+                    const currentChildCount = children.length;
+
+                    if (currentChildCount === previousChildCount) {
+                        console.log('No new posts, aborting processing.');
+                        return;
+                    }
+
+                    previousChildCount = currentChildCount;
+
                     children.forEach((child) => {
                         var removeChild = () => {
                             // console.log('Remove:', child.innerText);
@@ -345,7 +355,6 @@ function removeRecommandPost() {
                             child.remove();
                         };
 
-                        
                         if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
                             removeChild();
                         } else if (detectKeywords(child)) {
