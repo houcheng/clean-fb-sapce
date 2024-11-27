@@ -225,9 +225,9 @@ function isInViewport(element) {
 // TODO: Only simulate on the link.href with __cft__
 function simulateHover(element) {
     // Prevents simulating events changes the scrollbar position
-    if (!isInViewport(element)) {
-        return;
-    }
+    // if (!isInViewport(element)) {
+    //     return;
+    // }
 
     // Array of events to simulate
     const events = [
