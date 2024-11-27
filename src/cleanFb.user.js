@@ -336,7 +336,7 @@ function removeRecommandPost() {
                     const currentChildCount = children.length;
 
                     if (currentChildCount === previousChildCount) {
-                        console.log('No new posts, aborting processing.');
+                        console.log('No new posts, aborting processing, totocal count is: ', previousChildCount);
                         return;
                     }
 
