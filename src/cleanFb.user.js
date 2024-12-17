@@ -358,7 +358,7 @@ function removeRecommandPost() {
                         if (child.innerText && child.innerText.startsWith("連續短片和短片")) {
                             removeChild();
                         } else if (detectKeywords(child)) {
-                            removeChild();
+                           removeChild();
                         } else {
                             detectAdSpanWithLink(child, removeChild);
                         }
