@@ -351,7 +351,7 @@ function removeRecommandPost() {
                             const msg = title;
                             // console.log(`<div>${removedCount} ${msg}</div>`);
                             deletedTitles.push(`${removedCount} ${msg}`);
-                            bannerNode.childNodes[0].innerHTML = `<div>${removedCount} ${msg}</div>`;
+                            bannerNode.childNodes[0].innerHTML = `<div>(${previousChildCount + removedCount}/${removedCount}) ${msg}</div>`;
                             child.remove();
                         };
 
