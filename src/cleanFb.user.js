@@ -175,8 +175,14 @@ function findPostsParentBySize(rootNode) {
 
 function detectKeywords(node) {
     if (debugNode) console.log("inner html", node.innerHTML);
-    if (!node.innerHTML) return false;
+    if (!node.innerText) return false;
     const keywords = userKeywords.length > 0 ? NeedToRemoveKeywords.concat(userKeywords) : NeedToRemoveKeywords;
+
+    // Check if the node's innerText contains any of the keywords
+    if (!keywords.some(keyword => node.innerText.includes(keyword))) {
+        return false;
+    }
+
     const spans = node.querySelectorAll('span');
     return Array.from(spans).some(span => keywords.some(keyword => span.innerText.includes(keyword)));
 }
