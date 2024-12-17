@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Clean Fb
 // @namespace    https://github.com/houcheng/clean-fb-space
-// @version      0.12
+// @version      0.13
 // @description  Clean facebook AD blocks
 // @author       Kevin Yang, Houcheng Lin
 // @grant        GM_addStyle
@@ -146,10 +146,8 @@ function createBannerNode() {
 }
 
 const bannerNode = createBannerNode();
-const CheckInterval = 3000;
 const NeedToRemoveKeywords = ['為你推薦', 'Suggested for you', '贊助', 'Sponsored', 'Reels and short videos', 'Follow', 'Join'];
 
-var lastRunTick = (new Date()).getTime();
 var removedCount = 0;
 var debugNode = false;
 var previousChildCount = 0;
@@ -326,9 +324,6 @@ function detectAdSpanWithLink(post, callback) {
 }
 
 function removeRecommandPost() {
-    var nowTick = (new Date()).getTime();
-    if (nowTick - lastRunTick < CheckInterval) return;
-    lastRunTick = nowTick;
     console.log('removeRecommandPost');
 
     const rootNodes = document.querySelectorAll('h3');
@@ -374,24 +369,33 @@ function removeRecommandPost() {
         }
     });
     if (debugNode) debugNode = false;
-    lastRunTick = nowTick;
 }
 
-function printH3Titles() {
-    document.querySelectorAll('h3').forEach((h3) => {
-        console.log('H3 Title:', h3.innerText);
+let isRemoving = false;
+let modified = false;
+
+function setupMutationObserver() {
+    const observer = new MutationObserver(() => {
+        modified = true;
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
 }
 
 function executeActions() {
-    removeRecommandPost();
-    // printH3Titles();
-    setTimeout(() => executeActions(), 1000);
+    if (modified && !isRemoving) {
+        isRemoving = true;
+        removeRecommandPost();
+        modified = false;
+        isRemoving = false;
+    }
 }
-
 
 (function () {
     'use strict';
-    // Your code here...
-    executeActions();
+    setupMutationObserver();
+    setInterval(executeActions, 3000);
 })();
